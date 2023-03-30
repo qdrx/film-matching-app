@@ -13,4 +13,4 @@ const socketManager: SocketManager = new SocketManager(db);
 // for (let i = 0; i < 30; i++) {
 //     db.addRandomFilm().then(r => console.log("random film added"));
 // }
-// TODO: Finish create models for mongoose
+// TODO: agreement mechanism
