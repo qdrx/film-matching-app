@@ -1,5 +1,3 @@
-import { Schema, model } from 'mongoose';
-import IFilm from '../interfaces/film';
 
 export class Film {
     name: string;
@@ -12,6 +10,7 @@ export class Film {
     imdbRating: number;
     imdbVotes: number;
     mainActors: string[];
+    genres: string[];
 
     constructor(
         name: string,
@@ -23,7 +22,8 @@ export class Film {
         grossWorldwide: number,
         imdbRating: number,
         imdbVotes: number,
-        mainActors: string[]
+        mainActors: string[],
+        genres: string[]
     ) {
         this.name = name;
         this.year = year;
@@ -35,5 +35,6 @@ export class Film {
         this.imdbRating = imdbRating;
         this.imdbVotes = imdbVotes;
         this.mainActors = mainActors;
+        this.genres = genres;
     }
 }

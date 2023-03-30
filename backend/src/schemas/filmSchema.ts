@@ -42,6 +42,10 @@ const FilmSchema = new Schema<IFilm>({
         type: [String],
         required: true,
     },
+    genres: {
+        type: [String],
+        required: true,
+    }
 });
 
 const FilmModel = model('Film', FilmSchema)

@@ -9,4 +9,5 @@ export interface IFilm {
     imdbRating: number;
     imdbVotes: number;
     mainActors: string[];
+    genres: string[];
 }
