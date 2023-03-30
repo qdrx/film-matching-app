@@ -3,7 +3,7 @@ import dotenv from 'dotenv';
 import FilmModel from "../schemas/filmSchema";
 import {IFilm} from "../interfaces/film";
 import {createRandomFilm} from "../utils/faker-generator";
-
+import {Film} from "../models/film";
 
 
 export class Database {
@@ -27,6 +27,27 @@ export class Database {
         const filmModel = new FilmModel(film);
         await filmModel.save();
     }
+
+    getRandomFilmsByGenres = async (genres: string[], limit: number): Promise<Film[]> => {
+
+        if (typeof genres === 'string') {
+            genres = [genres];
+        }
+        const filmsData: Array<IFilm> = await FilmModel.find({ $or: genres.map(genre => ({ genres: genre })) }).limit(limit);
+        return Array.isArray(filmsData) ? filmsData.map((filmData) => new Film(
+            filmData.name,
+            filmData.year,
+            filmData.description,
+            filmData.screenshotLinks,
+            filmData.image,
+            filmData.budget,
+            filmData.grossWorldwide,
+            filmData.imdbRating,
+            filmData.imdbVotes,
+            filmData.mainActors,
+            filmData.genres,
+        )) : [];
+    };
 
     addRandomFilm = async () => {
         const film = createRandomFilm();
