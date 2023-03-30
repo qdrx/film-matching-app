@@ -1,5 +1,6 @@
 import {connect} from 'mongoose';
 import dotenv from 'dotenv';
+import FilmModel from "../schemas/filmSchema";
 
 export class Database {
     mongoUrl: string;
@@ -17,5 +18,13 @@ export class Database {
         });
         console.log('Connected to database');
     };
+
+    addFilm = async (film: IFilm) => {
+        const filmModel = new FilmModel(film);
+        await filmModel.save();
+    }
+
+
+
 }
 
