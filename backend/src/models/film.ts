@@ -1,5 +1,6 @@
+import {IFilm} from "../interfaces/film";
 
-export class Film {
+export class Film implements IFilm{
     name: string;
     year: number;
     description: string;
