@@ -1,6 +1,6 @@
 import {connect} from 'mongoose';
 import dotenv from 'dotenv';
-import FilmModel from "../schemas/filmSchema";
+import FilmModel from "../schemas/film-schema";
 import {IFilm} from "../interfaces/film";
 import {createRandomFilm} from "../utils/faker-generator";
 import {Film} from "../models/film";
