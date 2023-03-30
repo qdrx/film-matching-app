@@ -1,15 +1,21 @@
 import {connect} from 'mongoose';
+import dotenv from 'dotenv';
 
 export class Database {
-    constructor(
-        private readonly mongoUrl: string,
-        private readonly mongoDbName: string
-    ) {
+    mongoUrl: string;
+    mongoDbName: string;
 
+    constructor(mongoUrl: string, mongoDbName: string) {
+        this.mongoUrl = mongoUrl;
+        this.mongoDbName = mongoDbName;
+        dotenv.config();
+        this.connection();
     }
-    connect = async () => {
+    connection = async () => {
         await connect(this.mongoUrl, {
             dbName: this.mongoDbName
         });
-    }
+        console.log('Connected to database');
+    };
 }
+

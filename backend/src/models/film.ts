@@ -1,4 +1,7 @@
-export class Film{
+import { Schema, model } from 'mongoose';
+import IFilm from '../interfaces/film';
+
+export class Film {
     name: string;
     year: number;
     description: string;
