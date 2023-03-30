@@ -1,4 +1,4 @@
-interface IFilm {
+export interface IFilm {
     name: string;
     year: number;
     description: string;

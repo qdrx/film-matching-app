@@ -1,6 +1,7 @@
 import {connect} from 'mongoose';
 import dotenv from 'dotenv';
 import FilmModel from "../schemas/filmSchema";
+import {IFilm} from "../interfaces/film";
 
 export class Database {
     mongoUrl: string;
