@@ -2,6 +2,9 @@ import {connect} from 'mongoose';
 import dotenv from 'dotenv';
 import FilmModel from "../schemas/filmSchema";
 import {IFilm} from "../interfaces/film";
+import {createRandomFilm} from "../utils/faker-generator";
+
+
 
 export class Database {
     mongoUrl: string;
@@ -25,7 +28,9 @@ export class Database {
         await filmModel.save();
     }
 
-
-
+    addRandomFilm = async () => {
+        const film = createRandomFilm();
+        await this.addFilm(film);
+    }
 }
 
