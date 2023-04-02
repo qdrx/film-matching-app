@@ -33,7 +33,10 @@ export class Database {
         if (typeof genres === 'string') {
             genres = [genres];
         }
-        const filmsData: Array<IFilm> = await FilmModel.find({ $or: genres.map(genre => ({ genres: genre })) }).limit(limit);
+        const filmsData: Array<IFilm> = await FilmModel.aggregate([
+            { $match: { genres: { $in: genres } } },
+            { $sample: { size: limit } }
+        ]).exec();
         return Array.isArray(filmsData) ? filmsData.map((filmData) => new Film(
             filmData.name,
             filmData.year,
