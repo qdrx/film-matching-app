@@ -11,3 +11,8 @@ export interface IFilm {
     mainActors: string[];
     genres: string[];
 }
+
+export interface IVoteFilm {
+    film: IFilm;
+    vote: number;
+}
