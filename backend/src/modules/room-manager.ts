@@ -1,6 +1,6 @@
 import { Room } from "../models/room";
-import { Film } from "../models/film";
 import shortid from "shortid";
+import {IFilm} from "../interfaces/film";
 
 export class RoomManager {
     private rooms: Room[] = [];
@@ -19,7 +19,7 @@ export class RoomManager {
         return this.rooms.find(room => room.id === id);
     }
 
-    addFilmToRoom(roomId: string, film: Film): void {
+    addFilmToRoom(roomId: string, film: IFilm): void {
         const room = this.getRoomById(roomId);
         if (room){
             room.films.push(film);

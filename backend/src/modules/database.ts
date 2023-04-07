@@ -3,7 +3,6 @@ import dotenv from 'dotenv';
 import FilmModel from "../schemas/film-schema";
 import {IFilm} from "../interfaces/film";
 import {createRandomFilm} from "../utils/faker-generator";
-import {Film} from "../models/film";
 
 
 export class Database {
@@ -28,7 +27,7 @@ export class Database {
         await filmModel.save();
     }
 
-    getRandomFilmsByGenres = async (genres: string[], limit: number): Promise<Film[]> => {
+    getRandomFilmsByGenres = async (genres: string[], limit: number): Promise<IFilm[]> => {
 
         if (typeof genres === 'string') {
             genres = [genres];
@@ -37,19 +36,7 @@ export class Database {
             { $match: { genres: { $in: genres } } },
             { $sample: { size: limit } }
         ]).exec();
-        return Array.isArray(filmsData) ? filmsData.map((filmData) => new Film(
-            filmData.name,
-            filmData.year,
-            filmData.description,
-            filmData.screenshotLinks,
-            filmData.image,
-            filmData.budget,
-            filmData.grossWorldwide,
-            filmData.imdbRating,
-            filmData.imdbVotes,
-            filmData.mainActors,
-            filmData.genres,
-        )) : [];
+        return Array.isArray(filmsData) ? filmsData : [];
     };
 
     addRandomFilm = async () => {

@@ -59,11 +59,11 @@ export class SocketManager {
                     }
                     if (voteFilm.vote === 0) {
                         room.bannedFilms.push(voteFilm.film)
-                        this.io.to(roomId.id).emit("vote", {vote: 0, film: voteFilm.film});
+                        socket.emit("vote", {vote: 0, film: voteFilm.film});
                     }
                     if (voteFilm.vote === 1) {
                         room.acceptedFilms.push(voteFilm.film)
-                        this.io.to(roomId.id).emit("vote", {vote: 1, film: voteFilm.film});
+                        socket.emit("vote", {vote: 1, film: voteFilm.film});
                     }
                 });
                 socket.on("showMatches", () => {

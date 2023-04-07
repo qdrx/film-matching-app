@@ -1,9 +1,8 @@
-import {Film} from "./film";
 import {IFilm} from "../interfaces/film";
 
 export class Room {
     id: string;
-    films: Film[];
+    films: IFilm[];
     users: string[];
     bannedFilms: Array<IFilm>;
     acceptedFilms: Array<IFilm>;
@@ -17,6 +16,8 @@ export class Room {
     }
 
     findMatchedFilms(arr: Array<IFilm>) {
-        return arr.filter((film, index) => arr.indexOf(film) != index);
+        let result = arr.filter((film, index) => arr.indexOf(film) != index);
+        console.log(result);
+        return result;
     }
 }
