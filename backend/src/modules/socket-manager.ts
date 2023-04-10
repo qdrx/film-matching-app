@@ -4,6 +4,7 @@ import {RoomManager} from "./room-manager";
 import {Database} from "./database";
 import {IRoomId} from "../interfaces/roomId";
 import {IFilm, IVoteFilm} from "../interfaces/film";
+import logger from "./logger";
 
 export class SocketManager {
     public readonly io;
@@ -25,7 +26,7 @@ export class SocketManager {
     }
 
     private handleConnection = async (socket: Socket) => {
-        console.log(`A user connected: ${socket.id}`);
+        logger.info(`New client connected: ${socket.id}`);
         socket.on("createRoom", this.handleCreateRoom(socket));
         socket.on("joinRoom", this.handleJoinRoom(socket));
         socket.on("vote", this.handleVote(socket));
@@ -34,6 +35,7 @@ export class SocketManager {
 
     private handleCreateRoom = (socket: Socket) => async (filmPreferences: string[]) => {
         if (!Array.isArray(filmPreferences) || filmPreferences.length === 0) {
+            logger.error(`socket: ${socket.id}: Film preferences are not valid`)
             socket.emit("roomCreationError", {error: "Film preferences are not valid"});
             return;
         }
@@ -43,6 +45,7 @@ export class SocketManager {
         for (let film of films) {
             room.films.push(film);
         }
+        logger.info(`Room created: ${roomId}, socket: ${socket.id}`);
         socket.emit("roomCreated", {roomID: roomId});
     };
 
@@ -53,11 +56,13 @@ export class SocketManager {
         }
         const room = this.roomManager.getRoomById(roomId.id);
         if (!room) {
+            logger.error(`socket: ${socket.id}: Room not found`);
             socket.emit("roomJoinError", {error: "Room not found"});
             return;
         }
         if (room) {
             if (room.users.length >= 2) {
+                logger.error(`socket: ${socket.id}: Room is full`);
                 socket.emit("roomJoinError", {error: "Room is full"});
                 return;
             }
@@ -70,35 +75,42 @@ export class SocketManager {
 
     private handleVote = (socket: Socket) => async (voteFilm: IVoteFilm) => {
         if (typeof voteFilm.roomID !== "string" || voteFilm.roomID.length !== 4) {
+            logger.error(`socket: ${socket.id}: Room ID is not valid`);
             socket.emit("roomJoinError", {error: "Room ID is not valid"});
             return;
         }
         const room = this.roomManager.getRoomById(voteFilm.roomID);
         if (typeof room === undefined) {
+            logger.error(`socket: ${socket.id}: Room not found`);
             socket.emit("roomJoinError", {error: "Room not found"});
             return;
         }
         if (voteFilm.vote === 0) {
             room.bannedFilms.push(voteFilm.film)
+            logger.info(`socket: ${socket.id}: Vote: ${voteFilm.vote}, film: ${voteFilm.film.name}`);
             socket.emit("vote", {vote: 0, film: voteFilm.film});
         }
         if (voteFilm.vote === 1) {
             room.acceptedFilms.push(voteFilm.film)
+            logger.info(`socket: ${socket.id}: Vote: ${voteFilm.vote}, film: ${voteFilm.film.name}`);
             socket.emit("vote", {vote: 1, film: voteFilm.film});
         }
     }
 
     private handleMatches = (socket: Socket) => async (roomId: IRoomId) => {
         if (typeof roomId.id !== "string" || roomId.id.length !== 4) {
+            logger.error(`socket: ${socket.id}: Room ID is not valid`)
             socket.emit("roomJoinError", {error: "Room ID is not valid"});
             return;
         }
         const room = this.roomManager.getRoomById(roomId.id);
         if (typeof room === undefined) {
+            logger.error(`socket: ${socket.id}: Room not found`);
             socket.emit("roomJoinError", {error: "Room not found"});
             return;
         }
         const matches = room.findMatchedFilms(room.acceptedFilms);
+        logger.info(`socket: ${socket.id}: Called showMatches}`);
         socket.emit("matches", {matches: matches});
     }
 }

@@ -3,6 +3,7 @@ import dotenv from 'dotenv';
 import FilmModel from "../schemas/film-schema";
 import {IFilm} from "../interfaces/film";
 import {createRandomFilm} from "../utils/faker-generator";
+import logger from "./logger";
 
 
 export class Database {
@@ -16,10 +17,14 @@ export class Database {
         this.connection();
     }
     connection = async () => {
-        await connect(this.mongoUrl, {
-            dbName: this.mongoDbName
-        });
-        console.log('Connected to database');
+        try{
+            await connect(this.mongoUrl, {
+                dbName: this.mongoDbName
+            });
+            logger.info('Database connected successfully');
+        } catch (e) {
+            logger.error('Database connection error: ' + e.message);
+        }
     };
 
     addFilm = async (film: IFilm) => {
