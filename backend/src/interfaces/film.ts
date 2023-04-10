@@ -15,4 +15,5 @@ export interface IFilm {
 export interface IVoteFilm {
     film: IFilm;
     vote: number;
+    roomID: string;
 }

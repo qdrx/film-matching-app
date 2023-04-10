@@ -16,8 +16,11 @@ export class Room {
     }
 
     findMatchedFilms(arr: Array<IFilm>) {
-        let result = arr.filter((film, index) => arr.indexOf(film) != index);
-        console.log(result);
-        return result;
+        const counts = arr.reduce((acc, film) => {
+            acc[film.name] = (acc[film.name] || 0) + 1;
+            return acc;
+        }, {});
+        const duplicates = Object.keys(counts).filter(name => counts[name] > 1);
+        return arr.filter(film => duplicates.includes(film.name));
     }
 }
