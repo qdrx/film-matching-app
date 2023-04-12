@@ -1,36 +1,88 @@
 import * as http from "http";
+import {IncomingMessage} from "http";
 import {Socket} from "socket.io";
 import {RoomManager} from "./room-manager";
 import {Database} from "./database";
 import {IRoomId} from "../interfaces/roomId";
-import {IFilm, IVoteFilm} from "../interfaces/film";
+import {IVoteFilm} from "../interfaces/film";
 import logger from "./logger";
+import {Counter, Gauge, Registry} from "prom-client";
 
 export class SocketManager {
     public readonly io;
     private readonly httpServer: http.Server;
     private roomManager: RoomManager;
     private database: Database;
+    private activeClients: Gauge<string>;
+    private receivedMessagesCounter: Counter<string>;
+    private readonly registry: Registry;
+    private readonly port: number;
 
-    constructor(database: Database) {
+    constructor(database: Database, port?: number) {
         this.database = database;
-        this.httpServer = require("http").createServer();
+        this.port = port || 3000;
+        this.httpServer = require("http").createServer((req: IncomingMessage, res: http.ServerResponse) => {
+            if (req.url === "/metrics") {
+                this.getMetricsEndpoint(req, res);
+            } else {
+                res.writeHead(404);
+                res.end();
+            }
+        });
         this.roomManager = new RoomManager();
         this.io = require("socket.io")(this.httpServer);
+        this.registry = new Registry();
+
+        this.receivedMessagesCounter = new Counter({
+            name: "received_messages_total",
+            help: "Total number of received messages",
+            registers: [this.registry],
+        });
+
+        this.activeClients = new Gauge({
+            name: "socket_active_clients",
+            help: "Total number of active clients",
+            registers: [this.registry],
+        });
+
+        this.io.use((socket: Socket, next: () => void) => {
+
+            socket.onAny((event: string, ...args) => {
+                this.receivedMessagesCounter.inc();
+                logger.info(`Socket: ${socket.id}: called ${event} event with args: ${args}`);
+            });
+
+            next();
+        });
 
         this.io.on("connection", this.handleConnection);
 
-        this.httpServer.listen(3000, () => {
-            console.log("Listening on port 3000");
+        this.httpServer.listen(this.port, () => {
+            logger.info(`Server started on port ${port}`);
         });
+    }
+
+    public getMetricsEndpoint(req: http.IncomingMessage, res: http.ServerResponse): void {
+        res.setHeader("Content-Type", this.registry.contentType);
+        this.registry
+            .metrics()
+            .then((data) => {
+                res.end(data);
+            })
+            .catch((err) => {
+                res.statusCode = 500;
+                res.end(err);
+            });
     }
 
     private handleConnection = async (socket: Socket) => {
         logger.info(`New client connected: ${socket.id}`);
+        this.activeClients.inc();
         socket.on("createRoom", this.handleCreateRoom(socket));
         socket.on("joinRoom", this.handleJoinRoom(socket));
         socket.on("vote", this.handleVote(socket));
         socket.on("showMatches", this.handleMatches(socket));
+        socket.on("disconnect", this.handleDisconnect(socket));
     };
 
     private handleCreateRoom = (socket: Socket) => async (filmPreferences: string[]) => {
@@ -112,5 +164,10 @@ export class SocketManager {
         const matches = room.findMatchedFilms(room.acceptedFilms);
         logger.info(`socket: ${socket.id}: Called showMatches}`);
         socket.emit("matches", {matches: matches});
+    }
+
+    private handleDisconnect = (socket: Socket) => async () => {
+        logger.info(`socket: ${socket.id}: Client disconnected`);
+        this.activeClients.dec();
     }
 }
