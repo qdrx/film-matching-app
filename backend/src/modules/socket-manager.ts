@@ -4,7 +4,7 @@ import {Socket} from "socket.io";
 import {RoomManager} from "./room-manager";
 import {Database} from "./database";
 import {IRoomId} from "../interfaces/roomId";
-import {IVoteFilm} from "../interfaces/film";
+import {IFilmPreferences, IVoteFilm} from "../interfaces/film";
 import logger from "./logger";
 import {Counter, Gauge, Registry} from "prom-client";
 
@@ -46,12 +46,10 @@ export class SocketManager {
         });
 
         this.io.use((socket: Socket, next: () => void) => {
-
             socket.onAny((event: string, ...args) => {
                 this.receivedMessagesCounter.inc();
                 logger.info(`Socket: ${socket.id}: called ${event} event with args: ${args}`);
             });
-
             next();
         });
 
@@ -85,15 +83,15 @@ export class SocketManager {
         socket.on("disconnect", this.handleDisconnect(socket));
     };
 
-    private handleCreateRoom = (socket: Socket) => async (filmPreferences: string[]) => {
-        if (!Array.isArray(filmPreferences) || filmPreferences.length === 0) {
+    private handleCreateRoom = (socket: Socket) => async (filmPreferences: IFilmPreferences) => {
+        if (!Array.isArray(filmPreferences.genres) || filmPreferences.genres.length === 0) {
             logger.error(`socket: ${socket.id}: Film preferences are not valid`)
             socket.emit("roomCreationError", {error: "Film preferences are not valid"});
             return;
         }
         const roomId = this.roomManager.generateRoomId();
         const room = this.roomManager.createRoom(roomId);
-        const films = await this.database.getRandomFilmsByGenres(filmPreferences, 10);
+        const films = await this.database.getRandomFilmsByGenres(filmPreferences.genres, 10);
         for (let film of films) {
             room.films.push(film);
         }
