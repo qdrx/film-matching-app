@@ -17,3 +17,7 @@ export interface IVoteFilm {
     vote: number;
     roomID: string;
 }
+
+export interface IFilmPreferences {
+    genres: string[];
+}
