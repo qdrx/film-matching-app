@@ -7,6 +7,7 @@ import {IRoomId} from "../interfaces/roomId";
 import {IFilmPreferences, IVoteFilm} from "../interfaces/film";
 import logger from "./logger";
 import {Counter, Gauge, Registry} from "prom-client";
+import helmet from "helmet";
 
 export class SocketManager {
     public readonly io;
@@ -44,6 +45,8 @@ export class SocketManager {
             help: "Total number of active clients",
             registers: [this.registry],
         });
+
+        this.io.use(helmet());
 
         this.io.use((socket: Socket, next: () => void) => {
             socket.onAny((event: string, ...args) => {
